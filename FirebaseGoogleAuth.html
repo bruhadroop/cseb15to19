@@ -40,7 +40,7 @@
   firebase.initializeApp(firebaseConfig)
 </script>
 <script>
-	navigator.serviceWorker.register('./cseb15to19/firebase-messaging-sw.js')
+	navigator.serviceWorker.register('./firebase-messaging-sw.js')
 	.then((registration) => {
 		const provider = new firebase.auth.GoogleAuthProvider()
 		const messaging = firebase.messaging()
