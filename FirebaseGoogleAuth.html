@@ -13,19 +13,17 @@
 			<p>Make sure popups are enabled.</p>
 		</div>
 		<div id="post-login" style="display: none;">
-			<img id="profile-pic" style="border-radius: 50%;" width="200px" height="200px"><br>
+			<img id="profile-pic" style="border-radius: 50%;" width="100px" height="100px"><br>
 			<h2 id="profile-name"></h2>
-			<h4 id="profile-email"></h4>
+			<p id="profile-email"></p>
+			<button id="enable_push" style="padding: 8px 16px; color: white; background-color: #0275d8; border: none; border-radius: 4px; font-family: 'Open Sans', sans-serif;">Enable Notifications</button>
 		</div>
 	</center>
 </body>
 </html>
-<!-- The core Firebase JS SDK is always required and must be listed first -->
 <script src="https://www.gstatic.com/firebasejs/7.3.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/7.3.0/firebase-auth.js"></script>
-<!-- TODO: Add SDKs for Firebase products that you want to use
-     https://firebase.google.com/docs/web/setup#available-libraries -->
-
+<script src="https://www.gstatic.com/firebasejs/7.3.0/firebase-messaging.js"></script>
 <script>
   // Your web app's Firebase configuration
   var firebaseConfig = {
@@ -49,5 +47,13 @@
 		document.getElementById("profile-pic").src = r.user.photoURL
 		document.getElementById("profile-name").innerHTML = r.user.displayName
 		document.getElementById("profile-email").innerHTML = r.user.email
-	});
+	}).catch((error) => document.getElementById("profile-email").innerHTML = error.message)
+	document.getElementById("enable_push").addEventListener('click', () => {
+		Notification.requestPermission().then((permission) => {
+			if(permission == "granted") {
+				document.getElementById("enable_push").innerHTML = "Subscribed!"
+				document.getElementById("enable_push").removeEventListener('click', () => {})
+			}
+		})
+	})
 </script>
