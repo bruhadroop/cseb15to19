@@ -16,7 +16,7 @@
 			<img id="profile-pic" style="border-radius: 50%;" width="100px" height="100px"><br>
 			<h2 id="profile-name"></h2>
 			<p id="profile-email"></p>
-			<button id="enable_push" style="padding: 8px 16px; color: white; background-color: #0275d8; border: none; border-radius: 4px; font-family: 'Open Sans', sans-serif; user-select: none;">Enable Notifications</button>
+			<!--<button id="enable_push" style="padding: 8px 16px; color: white; background-color: #0275d8; border: none; border-radius: 4px; font-family: 'Open Sans', sans-serif; user-select: none;">Enable Notifications</button>-->
 		</div>
 	</center>
 </body>
@@ -24,6 +24,7 @@
 <script src="https://www.gstatic.com/firebasejs/7.3.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/7.3.0/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/7.3.0/firebase-messaging.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.2.3/firebase-firestore.js"></script>
 <script>
   // Your web app's Firebase configuration
   var firebaseConfig = {
@@ -31,30 +32,37 @@
     authDomain: "gcetone.firebaseapp.com",
     databaseURL: "https://gcetone.firebaseio.com",
     projectId: "gcetone",
-    messagingSenderId: "1059297273439"
+    messagingSenderId: "1059297273439",
+    appId: "1:1059297273439:web:a56569478d7c919453ddea"
   };
   // Initialize Firebase
-  firebase.initializeApp(firebaseConfig);
+  firebase.initializeApp(firebaseConfig)
 </script>
 <script>
-	const provider = new firebase.auth.GoogleAuthProvider();
-	const messaging = firebase.messaging();
+	const provider = new firebase.auth.GoogleAuthProvider()
+	const messaging = firebase.messaging()
+	const db = firebase.firestore()
 
 	firebase.auth().signInWithPopup(provider).then((r) => {
 		console.log(r)
+		uid = r.user.uid
 		document.getElementById("init").style.display = "none"
 		document.getElementById("post-login").style.display = "block"
 		document.getElementById("profile-pic").src = r.user.photoURL
 		document.getElementById("profile-name").innerHTML = r.user.displayName
 		document.getElementById("profile-email").innerHTML = r.user.email
-	}).catch((error) => document.getElementById("profile-email").innerHTML = error.message)
 
-	messaging.requestPermission().then((e) => console.log(e))
-	
-	document.getElementById("enable_push").addEventListener('click', () => {
-			if(permission == "granted") {
-				document.getElementById("enable_push").innerHTML = "Subscribed!"
-				document.getElementById("enable_push").removeEventListener('click', () => {})
-			}
-	})
+		messaging.requestPermission().then(() => {
+			messaging.getToken().then((token) => {
+				console.log("Token", token)
+				const collection = db.collection("users")
+				collection.doc(r.user.uid).set({
+					'name': r.user.displayName,
+					'uid': r.user.uid,
+					'fcm_token': token
+				}).then(() => console.log("Document successfully written with UID", uid))
+			})
+		})
+
+	}).catch((error) => document.getElementById("profile-email").innerHTML = error.message)
 </script>
