@@ -8,15 +8,15 @@
 </head>
 <body style="font-family: 'Open Sans', sans-serif;">
 	<center>
-		<h1>GCTC Portal Notification Service</h1>
+		<h2>GCTC Portal Notification Service</h2>
 		<div id="init">			
 			<p>We will <b>automatically</b> authenticate you based on your primary Google account.<br>If multiple accounts exist on your device, you will be prompted to select one.</p>
 			<p>Make sure popups are enabled.</p>
 		</div>
-		<div id="post-login" style="display: none;">
-			<img id="profile-pic" style="border-radius: 50%;" width="100px" height="100px"><br>
-			<h2 id="profile-name"></h2>
-			<p id="profile-email"></p>
+		<div id="post_login" style="display: none;">
+			<img id="profile_pic" style="border-radius: 50%;" width="100px" height="100px"><br>
+			<h3 id="profile_name"></h3>
+			<p id="profile_email"></p>
 			<!--<button id="enable_push">Enable Notifications</button>-->
 		</div>
 		<div id="roll_init" style="display: none;">
@@ -46,44 +46,60 @@
 <script>
 	navigator.serviceWorker.register('./firebase-messaging-sw.js')
 	.then((registration) => {
-		const provider = new firebase.auth.GoogleAuthProvider()
-		const messaging = firebase.messaging()
-		const db = firebase.firestore()
-		messaging.useServiceWorker(registration)
+		firebase.auth().setPersistence(firebase.auth.Auth.Persistence.NONE).then(() => {
+			const provider = new firebase.auth.GoogleAuthProvider()
+			const messaging = firebase.messaging()
+			const db = firebase.firestore()
+			messaging.useServiceWorker(registration)
 
-		firebase.auth().signInWithPopup(provider).then((r) => {
-			console.log(r)
-			uid = r.user.uid
-			document.getElementById("init").style.display = "none"
-			document.getElementById("post-login").style.display = "block"
-			document.getElementById("profile-pic").src = r.user.photoURL
-			document.getElementById("profile-name").innerHTML = r.user.displayName
-			document.getElementById("profile-email").innerHTML = r.user.email
+			firebase.auth().signInWithPopup(provider).then((r) => {
+				console.log(r)
+				uid = r.user.uid
+				document.getElementById("init").style.display = "none"
+				document.getElementById("post_login").style.display = "block"
+				document.getElementById("profile_pic").src = r.user.photoURL
+				document.getElementById("profile_name").innerHTML = r.user.displayName
+				document.getElementById("profile_email").innerHTML = r.user.email
 
-			messaging.requestPermission().then(() => {
-				messaging.getToken().then((token) => {
-					console.log("Token", token)
-					const collection = db.collection("users")
+				messaging.requestPermission().then(() => {
+					messaging.getToken().then((token) => {
+						console.log("Token", token)
+						const collection = db.collection("users")
 
-					collection.doc(r.user.uid).get().then((doc) => {
-						if(doc.exists) {
-							data = doc.data()
-							if(data.roll === undefined) {
-								document.getElementById("roll_init").style.display = "block"
+						collection.doc(r.user.uid).get().then((doc) => {
+							if(doc.exists) {
+								data = doc.data()
+								if(data.roll === undefined) {
+									document.getElementById("roll_init").style.display = "block"
+									document.getElementById("roll_button").addEventListener('click', () => {
+										document.getElementById("roll_button").innerHTML = "Submitting"
+										document.getElementById("roll_button").disabled = true
+
+										const roll = document.getElementById("roll_no").value
+										collection.doc(r.user.uid).update({
+											'roll': roll
+										}).then(() => {
+											console.log("Roll Number updated successfully")
+											document.getElementById("roll_init").style.display = "none"
+										});
+									})
+								}
+								else {
+									document.getElementById("profile_email").innerHTML += "<br><b>" + data.roll + "</b>"
+								}
 							}
-						}
-						else {
-							collection.doc(r.user.uid).set({
-								'name': r.user.displayName,
-								'uid': r.user.uid,
-								'fcm_token': token
-							}).then(() => console.log("Document successfully written with UID", uid))							
-						}
+							else {
+								collection.doc(r.user.uid).set({
+									'name': r.user.displayName,
+									'uid': r.user.uid,
+									'fcm_token': token
+								}).then(() => console.log("Document successfully written with UID", uid))							
+							}
+						})
 					})
 				})
-			})
 
-		}).catch((error) => document.getElementById("profile-email").innerHTML = error.message)
-
+			}).catch((error) => document.getElementById("profile-email").innerHTML = error.message)
+		});
 	});
 </script>
