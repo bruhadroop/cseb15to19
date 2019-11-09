@@ -40,30 +40,36 @@
   firebase.initializeApp(firebaseConfig)
 </script>
 <script>
-	const provider = new firebase.auth.GoogleAuthProvider()
-	const messaging = firebase.messaging()
-	const db = firebase.firestore()
+	navigator.serviceWorker.register('https://bruhadroop.github.io/cseb15to19/firebase-messaging-sw.js')
+	.then((registration) => {
+		messaging.useServiceWorker(registration)
 
-	firebase.auth().signInWithPopup(provider).then((r) => {
-		console.log(r)
-		uid = r.user.uid
-		document.getElementById("init").style.display = "none"
-		document.getElementById("post-login").style.display = "block"
-		document.getElementById("profile-pic").src = r.user.photoURL
-		document.getElementById("profile-name").innerHTML = r.user.displayName
-		document.getElementById("profile-email").innerHTML = r.user.email
+		const provider = new firebase.auth.GoogleAuthProvider()
+		const messaging = firebase.messaging()
+		const db = firebase.firestore()
 
-		messaging.requestPermission().then(() => {
-			messaging.getToken().then((token) => {
-				console.log("Token", token)
-				const collection = db.collection("users")
-				collection.doc(r.user.uid).set({
-					'name': r.user.displayName,
-					'uid': r.user.uid,
-					'fcm_token': token
-				}).then(() => console.log("Document successfully written with UID", uid)).catch((error) => document.getElementById("error").innerHTML = error.message)
+		firebase.auth().signInWithPopup(provider).then((r) => {
+			console.log(r)
+			uid = r.user.uid
+			document.getElementById("init").style.display = "none"
+			document.getElementById("post-login").style.display = "block"
+			document.getElementById("profile-pic").src = r.user.photoURL
+			document.getElementById("profile-name").innerHTML = r.user.displayName
+			document.getElementById("profile-email").innerHTML = r.user.email
+
+			messaging.requestPermission().then(() => {
+				messaging.getToken().then((token) => {
+					console.log("Token", token)
+					const collection = db.collection("users")
+					collection.doc(r.user.uid).set({
+						'name': r.user.displayName,
+						'uid': r.user.uid,
+						'fcm_token': token
+					}).then(() => console.log("Document successfully written with UID", uid))
+				})
 			})
-		})
 
-	}).catch((error) => document.getElementById("profile-email").innerHTML = error.message)
+		}).catch((error) => document.getElementById("profile-email").innerHTML = error.message)
+
+	});
 </script>
