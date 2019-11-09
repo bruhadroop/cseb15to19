@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1.0">
+<head>
+	<title>GCTC Portal Notification</title>
+	<link href="https://fonts.googleapis.com/css?family=Open+Sans&display=swap" rel="stylesheet">
+</head>
+<body style="font-family: 'Open Sans', sans-serif;">
+	<center>
+		<h1>GCTC Portal Notification Service</h1>
+		<div id="init">			
+			<p>We will <b>automatically</b> authenticate you based on your primary Google account.<br>If multiple accounts exist on your device, you will be prompted to select one.</p>
+			<p>Make sure popups are enabled.</p>
+		</div>
+		<div id="post-login" style="display: none;">
+			<img id="profile-pic" style="border-radius: 50%;" width="200px" height="200px"><br>
+			<h2 id="profile-name"></h2>
+			<h4 id="profile-email"></h4>
+		</div>
+	</center>
+</body>
+</html>
+<!-- The core Firebase JS SDK is always required and must be listed first -->
+<script src="https://www.gstatic.com/firebasejs/7.3.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.3.0/firebase-auth.js"></script>
+<!-- TODO: Add SDKs for Firebase products that you want to use
+     https://firebase.google.com/docs/web/setup#available-libraries -->
+
+<script>
+  // Your web app's Firebase configuration
+  var firebaseConfig = {
+    apiKey: "AIzaSyDpW1PViiXyP3obr0ijYSg7sw8Lkntm6a0",
+    authDomain: "gcetone.firebaseapp.com",
+    databaseURL: "https://gcetone.firebaseio.com",
+    projectId: "gcetone",
+    storageBucket: "gcetone.appspot.com",
+    messagingSenderId: "1059297273439",
+    appId: "1:1059297273439:web:a56569478d7c919453ddea"
+  };
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+</script>
+<script>
+	var provider = new firebase.auth.GoogleAuthProvider();
+	firebase.auth().signInWithPopup(provider).then((r) => {
+		console.log(r)
+		document.getElementById("init").style.display = "none"
+		document.getElementById("post-login").style.display = "block"
+		document.getElementById("profile-pic").src = r.user.photoURL
+		document.getElementById("profile-name").innerHTML = r.user.displayName
+		document.getElementById("profile-email").innerHTML = r.user.email
+	});
+</script>
