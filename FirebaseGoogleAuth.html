@@ -14,7 +14,7 @@
 			<p>Make sure popups are enabled.</p>
 		</div>
 		<div id="post_login" style="display: none;">
-			<img id="profile_pic" style="border-radius: 50%;" width="100px" height="100px"><br>
+			<img id="profile_pic" style="border-radius: 50%;" width="50px" height="50px"><br>
 			<h3 id="profile_name"></h3>
 			<p id="profile_email"></p>
 			<!--<button id="enable_push">Enable Notifications</button>-->
@@ -23,6 +23,7 @@
 			<small>It seems that your Roll No. does not exist in our database. We will send you relavent notifications based on your Roll No.</small><br>
 			<input type="text" id="roll_no" maxlength="10" placeholder="Roll Number" /> <button id="roll_button">Submit</button>
 		</div>
+		<small id="status" style="color: green"></small>
 	</center>
 </body>
 </html>
@@ -64,6 +65,7 @@
 				messaging.requestPermission().then(() => {
 					messaging.getToken().then((token) => {
 						console.log("Token", token)
+						document.getElementById("status").innerHTML = "Congratulations! Notifications are enabled!"
 						const collection = db.collection("users")
 
 						collection.doc(r.user.uid).get().then((doc) => {
@@ -93,7 +95,10 @@
 									'name': r.user.displayName,
 									'uid': r.user.uid,
 									'fcm_token': token
-								}).then(() => console.log("Document successfully written with UID", uid))							
+								}).then(() => {
+									console.log("Document successfully written with UID", uid)
+									document.getElementById("status").innerHTML = "Congratulations! Notifications are enabled!"
+								})							
 							}
 						})
 					})
