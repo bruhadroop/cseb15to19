@@ -17,6 +17,7 @@
 			<h2 id="profile-name"></h2>
 			<p id="profile-email"></p>
 			<!--<button id="enable_push" style="padding: 8px 16px; color: white; background-color: #0275d8; border: none; border-radius: 4px; font-family: 'Open Sans', sans-serif; user-select: none;">Enable Notifications</button>-->
+			<p id="error"></p>
 		</div>
 	</center>
 </body>
@@ -60,7 +61,7 @@
 					'name': r.user.displayName,
 					'uid': r.user.uid,
 					'fcm_token': token
-				}).then(() => console.log("Document successfully written with UID", uid))
+				}).then(() => console.log("Document successfully written with UID", uid)).catch((error) => document.getElementById("error").innerHTML = error.message)
 			})
 		})
 
