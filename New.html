@@ -1,0 +1,172 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Assignment Components</title>
+	<link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400&display=swap" rel="stylesheet">
+	<meta name="viewport" content="width=device-width">
+	
+</head>
+<style type="text/css">
+@font-face {
+    font-family: "SF Pro Regular";
+    src: url("http://webportal.esy.es/SF-Pro-Display-Regular.woff") format('woff');
+}
+.sub-container {
+		display: grid;
+		grid-template-columns: 25% auto;
+		grid-column-gap: 8px;
+	}
+	.card {
+		box-sizing: border-box;
+		width: 100%;
+		padding: 2px 8px;
+		margin: 8px 0px;
+	}
+	.grid {
+		display: grid;
+		grid-template-columns: 1fr 1fr 6fr 1fr 1fr 1fr 1fr;
+		align-items: center;
+		grid-column-gap: 4px;
+	}
+	.border-red {
+		border: 1px solid #DC3535;
+		border-left-width: 5px;
+	}
+	.text-red {
+		color: #DC3535;
+	}
+	.desc {
+		font-size: 14px;
+	}
+	.light {
+		font-weight: 300;
+	}
+	.dark {
+		font-weight: 600;
+	}
+	.var-name {
+		font-size: 24px;
+	}
+	.small {
+		font-size: 10px;
+	}
+	.no-border {
+		outline: none;
+		border: 0px solid;
+	}
+	.large {
+		font-size: 32px;
+	}
+	input,select {
+		font-family: inherit;
+		border: 0px;
+		outline: none;
+		background-color: transparent;
+		cursor: default;
+	}
+	select:focus, input:focus {
+		
+	}
+	.border-blue {
+		border: 1px solid #007BFF;
+		border-left-width: 5px;
+	}
+	.hover {
+		transition: all 0.2s ease;
+		background-color: #F8F9FA;
+	}
+	.hover:hover {
+		background-color: #6C757D;
+	}
+	.active {
+		border: 1px solid green;
+	}
+</style>
+<body style="font-family: 'SF Pro Regular';">
+<div class="sub-container">
+	<div>
+		<button id="new_q_btn">Add a New Question</button>
+		<div id="q_list"></div>
+		<button class="card border-red">Submit</button>
+	</div>
+	<div id="main">
+		
+	</div>
+</div>
+
+<script>
+	const e = (element) => document.getElementById(element)
+	let q_array = new Array()
+	let current_index = null
+
+	const UpdateQuestionUI = () => {
+		const target = e('q_list')
+		target.innerHTML = ''
+		q_array.forEach((item) => {
+			let div = document.createElement('div')
+			const text = (item.description === null) ? '[New Question]' : item.description
+
+			div.innerHTML = '<div class="card blue border-blue desc dark hover" onclick="UpdateMain('+item.id+')">'+text+'</div>'
+			target.appendChild(div)
+		})
+	}
+
+	const UpdateMain = (q_id) => {
+		current_index = q_id
+		e('main').innerHTML = ''
+		let input = document.createElement('input')
+		input.id = 'q_input'
+		input.className = 'card border-blue var-name'
+		input.style.padding = '4px 8px'
+		input.value = q_array[current_index].description
+		input.placeholder = "Enter Question #"+(q_id+1)
+		e('main').appendChild(input)
+
+		for(let [k,v] of q_array[current_index].var) {
+			var div = document.createElement("div");
+			div.innerHTML = '<div class="card border-red grid"><span><select class="light desc text-red" name="type[]"><option>Variable</option><option>Constant</option><option>Scientific</option></select></span><span><input type="text" size=4 class="light desc var-name" name="var[]" placeholder="Name" value="'+v.name+'"></span><span><input type="text" onkeyup="getUnits(this)" class="light desc" name="desc[]" style="min-width: 100%" placeholder="Description"></span><span><input type="text" size=3 class="light desc" name="min[]" placeholder="Min"></span><span><input type="text" size=3 class="light desc" name="max[]" placeholder="Max"></span><span><input type="text" size=3 class="light desc" name="pre[]" placeholder="Pre"></span><span><input type="text" size=7 class="light desc" name="unit[]" id="unit" placeholder="Units"></span></div>'
+			e('main').appendChild(div)
+		}
+
+		e('q_input').addEventListener('blur', () => {
+			var regex = /\\\w+/g;
+			const variables = e("q_input").value.match(regex);
+			variables.forEach((item) => {
+				q_array[current_index].var.set(item.substring(1), new Variable(0, item.substring(1), "", 0, 0, 0, "None"))
+			})
+
+			q_array[current_index].description = e('q_input').value
+			UpdateQuestionUI()
+			UpdateMain(q_id)
+		})
+
+		e("q_input").addEventListener('keyup', () => {
+			
+		})
+	}
+
+	function Question(id, description) {
+		this.id = id;
+		this.description = description;
+		this.var = new Map();
+	}
+
+	function Variable(type, name, description, min, max, pre, unit) {
+		this.type = type;
+		this.name = name;
+		this.description = description;
+		this.min = min;
+		this.max = max;
+		this.pre = pre;
+		this.unit = unit;
+	}
+
+	e("new_q_btn").addEventListener('click', () => {
+		q_array.push(new Question(q_array.length, null))
+		UpdateQuestionUI()
+		UpdateMain(q_array.length-1)
+		current_index = q_array.length - 1
+	})
+</script>
+</body>
