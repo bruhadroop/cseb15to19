@@ -82,6 +82,14 @@
 	.active {
 		border: 1px solid green;
 	}
+	textarea {
+		width: 100%;
+		border: 1px solid grey;
+		outline: none;
+		background-color: transparent;
+		height: 50vh;
+		line-height: 1.5em
+	}
 </style>
 <body style="font-family: 'SF Pro Regular';">
 <div class="sub-container">
@@ -94,7 +102,6 @@
 		
 	</div>
 </div>
-
 <script>
 	const e = (element) => document.getElementById(element)
 	let q_array = new Array()
@@ -106,10 +113,34 @@
 		q_array.forEach((item) => {
 			let div = document.createElement('div')
 			const text = (item.description === null) ? '[New Question]' : item.description
-
 			div.innerHTML = '<div class="card blue border-blue desc dark hover" onclick="UpdateMain('+item.id+')">'+text+'</div>'
 			target.appendChild(div)
 		})
+	}
+
+	const AddVariable = () => {
+		const var_name = prompt('Enter Variable Name')
+		q_array[current_index].var.set(var_name, new Variable(0, var_name, "", 0, 0, 0, "None"))
+		UpdateMain(current_index)
+	}
+
+	const UpdateValue = (e, var_name, value) => {
+		console.log(e, var_name, value)
+		// const var_name = e.
+		switch(e.placeholder) {
+			case "Name": q_array[current_index].var.get(var_name).name = value
+				break
+			case "Description": q_array[current_index].var.get(var_name).description = value
+				break
+			case "Min": q_array[current_index].var.get(var_name).min = parseInt(value)
+				break
+			case "Max": q_array[current_index].var.get(var_name).max = parseInt(value)
+				break
+			case "Pre": q_array[current_index].var.get(var_name).pre = parseInt(value)
+				break
+			case "Units": q_array[current_index].var.get(var_name).unit = value
+				break
+		}
 	}
 
 	const UpdateMain = (q_id) => {
@@ -119,15 +150,19 @@
 		input.id = 'q_input'
 		input.className = 'card border-blue var-name'
 		input.style.padding = '4px 8px'
-		input.value = q_array[current_index].description
 		input.placeholder = "Enter Question #"+(q_id+1)
 		e('main').appendChild(input)
+		e('q_input').value = q_array[current_index].description
+
+		e('main').innerHTML += '<button onclick="AddVariable()">Add Variable</button>'
 
 		for(let [k,v] of q_array[current_index].var) {
 			var div = document.createElement("div");
-			div.innerHTML = '<div class="card border-red grid"><span><select class="light desc text-red" name="type[]"><option>Variable</option><option>Constant</option><option>Scientific</option></select></span><span><input type="text" size=4 class="light desc var-name" name="var[]" placeholder="Name" value="'+v.name+'"></span><span><input type="text" onkeyup="getUnits(this)" class="light desc" name="desc[]" style="min-width: 100%" placeholder="Description"></span><span><input type="text" size=3 class="light desc" name="min[]" placeholder="Min"></span><span><input type="text" size=3 class="light desc" name="max[]" placeholder="Max"></span><span><input type="text" size=3 class="light desc" name="pre[]" placeholder="Pre"></span><span><input type="text" size=7 class="light desc" name="unit[]" id="unit" placeholder="Units"></span></div>'
+			div.innerHTML = '<div class="card border-red grid"><span><select class="light desc text-red" onblur="UpdateValue(this,\''+k+'\', this.value)" name="type[]"><option>Variable</option><option>Constant</option><option>Scientific</option></select></span><span><input type="text" size=4 class="light desc var-name" onblur="UpdateValue(this,\''+k+'\', this.value)" name="var[]" placeholder="Name" value="'+v.name+'"></span><span><input type="text" class="light desc" onblur="UpdateValue(this,\''+k+'\', this.value)" name="desc[]" style="min-width: 100%" placeholder="Description" value="'+v.description+'"></span><span><input type="text" size=3 class="light desc" onblur="UpdateValue(this,\''+k+'\', this.value)" name="min[]" placeholder="Min" value='+v.min+'></span><span><input type="text" size=3 class="light desc" onblur="UpdateValue(this,\''+k+'\', this.value)" name="max[]" placeholder="Max" value='+v.max+'></span><span><input type="text" size=3 class="light desc" onblur="UpdateValue(this,\''+k+'\', this.value)" name="pre[]" placeholder="Pre" value='+v.pre+'></span><span><input type="text" size=7 class="light desc" onblur="UpdateValue(this,\''+k+'\', this.value)" name="unit[]" id="unit" placeholder="Units" value='+v.unit+'></span></div>'
 			e('main').appendChild(div)
 		}
+
+		e('main').innerHTML += "<div><div class='dark text-red card'>Main Function (Result is the value returned by this function)</div><div><textarea></textarea></div></div>"
 
 		e('q_input').addEventListener('blur', () => {
 			var regex = /\\\w+/g;
@@ -138,7 +173,7 @@
 
 			q_array[current_index].description = e('q_input').value
 			UpdateQuestionUI()
-			UpdateMain(q_id)
+			UpdateMain(current_index)
 		})
 
 		e("q_input").addEventListener('keyup', () => {
@@ -150,6 +185,7 @@
 		this.id = id;
 		this.description = description;
 		this.var = new Map();
+		this.f = null;
 	}
 
 	function Variable(type, name, description, min, max, pre, unit) {
